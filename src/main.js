@@ -984,8 +984,6 @@ function animate() {
 }
 
 // warm the shaders before the first visible frame
-window.__DEBUG_SCENE = scene;
-window.__DEBUG = { scene, camera, world, taxi, state, routeGuide, marker };
 renderer.compile(scene, camera);
 ui.setTimeLabel(world.presetLabel, world.getClock());
 ui.setMuted(audio.muted);

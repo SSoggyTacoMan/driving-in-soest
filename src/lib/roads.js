@@ -23,7 +23,10 @@ export const ROADS = [
 ];
 
 function keyFor(x, z) {
-  return `${Math.round(x * 100) / 100},${Math.round(z * 100) / 100}`;
+  // Intersection points land within a few centimetres of each other on each
+  // road because their parameters are rounded; a half-metre bucket merges them
+  // into one graph node without ever touching the 18 m walking nodes.
+  return `${Math.round(x * 2) / 2},${Math.round(z * 2) / 2}`;
 }
 
 export function buildGraph(roads = ROADS) {
@@ -112,12 +115,18 @@ export function buildGraph(roads = ROADS) {
     return best;
   };
 
-  function findPath(from, to) {
-    const start = nearestNode(from.x, from.z);
-    const end = nearestNode(to.x, to.z);
-    if (!start || !end) return [];
-    if (start === end) return [{ x: from.x, z: from.z }, { x: to.x, z: to.z }];
+  const nearestNodes = (x, z, count = 5, maxDistance = 45) => {
+    return nodes
+      .map((node) => ({ node, d: Math.hypot(node.x - x, node.z - z) }))
+      .filter((entry) => entry.d <= maxDistance)
+      .sort((a, b) => a.d - b.d)
+      .slice(0, count)
+      .map((entry) => entry.node);
+  };
 
+  function aStar(start, end) {
+    if (!start || !end) return null;
+    if (start === end) return { ids: [start.id], cost: 0 };
     const open = new Set([start.id]);
     const cameFrom = new Map();
     const gScore = new Map(nodes.map((n) => [n.id, Infinity]));
@@ -149,7 +158,7 @@ export function buildGraph(roads = ROADS) {
       }
     }
 
-    if (!cameFrom.has(end.id)) return [];
+    if (!cameFrom.has(end.id) && start !== end) return null;
     const ids = [end.id];
     let cursor = end.id;
     while (cameFrom.has(cursor)) {
@@ -157,14 +166,40 @@ export function buildGraph(roads = ROADS) {
       ids.push(cursor);
     }
     ids.reverse();
-    const points = ids.map((id) => {
-      const n = nodes[id];
-      return { x: n.x, z: n.z };
-    });
-    points.push({ x: to.x, z: to.z });
-    // Trim the first tiny hop at the player's end so the line does not zig-zag.
-    if (points.length > 1 && Math.hypot(points[0].x - from.x, points[0].z - from.z) > 1) {
+    return { ids, cost: gScore.get(end.id) };
+  }
+
+  function findPath(from, to) {
+    const startCandidates = nearestNodes(from.x, from.z, 5, 50);
+    const endCandidates = nearestNodes(to.x, to.z, 5, 50);
+    if (!startCandidates.length || !endCandidates.length) {
+      const fallbackStart = nearestNode(from.x, from.z);
+      const fallbackEnd = nearestNode(to.x, to.z);
+      if (!fallbackStart || !fallbackEnd) return [];
+      const fallback = aStar(fallbackStart, fallbackEnd);
+      if (!fallback) return [];
+      return [...fallback.ids.map((id) => ({ x: nodes[id].x, z: nodes[id].z })), { x: to.x, z: to.z }];
+    }
+
+    let best = null;
+    for (const start of startCandidates) {
+      for (const end of endCandidates) {
+        const result = aStar(start, end);
+        if (!result) continue;
+        const cost = Math.hypot(from.x - start.x, from.z - start.z)
+          + result.cost
+          + Math.hypot(end.x - to.x, end.z - to.z);
+        if (!best || cost < best.cost) best = { ...result, start, end, cost };
+      }
+    }
+    if (!best) return [];
+
+    const points = best.ids.map((id) => ({ x: nodes[id].x, z: nodes[id].z }));
+    if (Math.hypot(points[0].x - from.x, points[0].z - from.z) > 0.6) {
       points.unshift({ x: from.x, z: from.z });
+    }
+    if (Math.hypot(points[points.length - 1].x - to.x, points[points.length - 1].z - to.z) > 0.6) {
+      points.push({ x: to.x, z: to.z });
     }
     return points;
   }

@@ -6,6 +6,8 @@ Drive the yellow taxi, pick up passengers at the old church, the palace, the sta
 
 This is a Three.js remake of [leonardran/driving-in-soest](https://github.com/leonardran/driving-in-soest), rebuilt from scratch as a real 3D world.
 
+**Play the latest build:** https://ssoggytacoman.github.io/driving-in-soest/
+
 ## Play
 
 Requires Node.js 20+.
@@ -17,7 +19,7 @@ npm run dev
 
 Then open the local URL Vite prints.
 
-For a production build:
+For a production build (outputs to `docs/`, which is what GitHub Pages serves):
 
 ```bash
 npm run build

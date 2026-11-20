@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#161f1d" />
+  <title>Driving in Soest — a golden-hour taxi drive</title>
+  <meta name="description" content="A little 3D taxi game through Soest, the Netherlands, at golden hour." />
+  <script type="module" crossorigin src="./assets/index-vn-liL0l.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-VNTfWZFE.css">
+</head>
+<body>
+  <div id="stage">
+    <div id="scene" aria-hidden="true"></div>
+
+    <div id="minimap" class="minimap" aria-hidden="true">
+      <div id="minimapCanvas"></div>
+      <div class="minimap-shade"></div>
+      <div class="minimap-ring"></div>
+      <span class="minimap-n">N</span>
+      <span class="minimap-brand">SOEST</span>
+      <span class="minimap-dir" id="minimapDir">▲</span>
+    </div>
+
+    <div id="hud">
+      <div class="hud-top">
+        <div class="brand glass">
+          <span class="brand-mark">S</span>
+          <span class="brand-copy">
+            <b>SOEST TAXI</b>
+            <small>Golden hour service</small>
+          </span>
+          <span class="brand-stats">
+            <b id="moneyValue">€ 500</b>
+            <small id="rideValue">0 rides</small>
+          </span>
+        </div>
+
+        <div class="mission glass" id="missionCard">
+          <div class="mission-kicker">
+            <span class="live-dot"></span>
+            <span id="missionKicker">PICKUP</span>
+            <span class="mission-distance" id="missionDistance">140 m</span>
+          </div>
+          <div class="mission-title" id="missionTitle">Station Soest-Zuid</div>
+          <div class="mission-meta">
+            <span id="missionPassenger">Lotte van Dijk</span>
+            <span id="missionFare">€ 16</span>
+          </div>
+          <div class="mission-progress"><i id="missionProgress"></i></div>
+          <div class="mission-hint">
+            <span id="missionHint">Ease up to the kerb to pick up</span>
+            <span class="bearing"><i id="bearingArrow"></i></span>
+          </div>
+        </div>
+
+        <div class="control-stack">
+          <div class="clock glass">
+            <span class="clock-time" id="clockValue">19:12</span>
+            <span class="clock-label" id="clockLabel">GOLDEN HOUR</span>
+          </div>
+          <div class="quick-row">
+            <button class="icon-btn" id="timeBtn" title="Change the light (T)" aria-label="Change time of day">
+              <span class="icon-sun"></span>
+            </button>
+            <button class="icon-btn" id="cameraBtn" title="Camera (C)" aria-label="Switch camera">◎</button>
+            <button class="icon-btn" id="photoBtn" title="Photo mode (P)" aria-label="Photo mode">⌾</button>
+            <button class="icon-btn text-btn" id="soundBtn" title="Sound (M)" aria-label="Toggle sound">SOUND ON</button>
+            <button class="icon-btn text-btn" id="pauseBtn" title="Pause (Esc)" aria-label="Pause">PAUSE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="speedo glass" id="speedo">
+        <div class="speed-readout">
+          <b id="speedValue">0</b>
+          <span>KM/H</span>
+        </div>
+        <div class="speed-foot">
+          <span id="gearValue">D</span>
+          <span id="surfaceValue">ASPHALT</span>
+        </div>
+        <div class="speed-track"><i id="speedBar"></i></div>
+      </div>
+
+      <div class="hintbar glass" id="hintbar">
+        <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</span>
+        <span><kbd>SPACE</kbd> handbrake</span>
+        <span><kbd>C</kbd> camera</span>
+        <span><kbd>H</kbd> horn</span>
+        <span><kbd>P</kbd> photo</span>
+      </div>
+    </div>
+
+    <div id="dialogue" class="dialogue glass" aria-live="polite">
+      <span class="dialogue-avatar" id="dialogueAvatar">L</span>
+      <div>
+        <b id="dialogueName">Lotte</b>
+        <p id="dialogueText">Naar het station, alsjeblieft. Ik ben al laat!</p>
+      </div>
+    </div>
+
+    <div id="rideCard" class="ride-card glass" aria-live="polite">
+      <div class="ride-card-top">
+        <span id="rideCardKicker">NEW RIDE</span>
+        <span id="rideCardFare">€ 17</span>
+      </div>
+      <b id="rideCardNames">Lotte van Dijk</b>
+      <span id="rideCardRoute">Station Soest-Zuid → Oude Kerk</span>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite">
+      <span id="toastKicker">RIDE COMPLETE</span>
+      <b id="toastTitle">+ € 18</b>
+      <span id="toastText">Lotte stepped out at the Oude Kerk.</span>
+    </div>
+
+    <div class="menu" id="menu">
+      <div class="menu-scrim"></div>
+      <div class="menu-content">
+        <div class="menu-eyebrow"><span></span> SOEST, NL · 52.17° N, 5.29° E</div>
+        <h1 class="title">
+          <span class="title-small">Driving</span>
+          <span class="title-big"><em>in</em> Soest</span>
+        </h1>
+        <div class="title-rule"><i></i><span>GOLDEN HOUR TAXI SERVICE</span></div>
+        <p class="lede">A little yellow taxi, a town full of stories, and the last warm light of the day. Pick up strangers. Take the scenic route. Soest can wait.</p>
+        <div class="menu-actions">
+          <button id="startBtn" class="primary-btn">
+            <span>Start the meter</span>
+            <span class="btn-arrow">→</span>
+          </button>
+          <button id="helpBtn" class="ghost-btn">How to drive</button>
+        </div>
+        <div class="menu-hint">WASD or arrow keys · Space to handbrake · Sound on recommended</div>
+        <div class="menu-stats">
+          <div><b>12</b><span>little rides</span></div>
+          <i></i>
+          <div><b>1</b><span>unhurried town</span></div>
+          <i></i>
+          <div><b>∞</b><span>golden hour</span></div>
+        </div>
+      </div>
+      <div class="menu-side">
+        <span class="side-rule"></span>
+        <span>OPEN WORLD · SOLO · NO TIMERS</span>
+        <span class="side-rule"></span>
+      </div>
+      <div class="menu-corner">
+        <span>A SMALL GAME ABOUT</span>
+        <b>going the long way home</b>
+      </div>
+    </div>
+
+    <div class="modal" id="pauseModal">
+      <div class="modal-card">
+        <div class="modal-kicker">PAUSED · STILL GOLDEN</div>
+        <h2>The engine is idling.</h2>
+        <p>Soest will keep its light right where you left it.</p>
+        <div class="modal-actions">
+          <button id="resumeBtn" class="primary-btn"><span>Back to the drive</span><span class="btn-arrow">→</span></button>
+          <button id="pauseHelpBtn" class="ghost-btn">Controls</button>
+        </div>
+        <div class="modal-row">
+          <button id="pauseTimeBtn" class="tiny-btn">Change light</button>
+          <button id="pauseSoundBtn" class="tiny-btn">Sound</button>
+          <button id="pauseResetBtn" class="tiny-btn danger">New shift</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="helpModal">
+      <div class="modal-card help-card">
+        <button class="modal-close" id="helpCloseBtn" aria-label="Close">×</button>
+        <div class="modal-kicker">THE SHORT MANUAL</div>
+        <h2>Drive gently. Stop kindly.</h2>
+        <div class="help-grid">
+          <div><kbd>W</kbd><kbd>↑</kbd><span>Accelerate</span></div>
+          <div><kbd>S</kbd><kbd>↓</kbd><span>Brake / reverse</span></div>
+          <div><kbd>A</kbd><kbd>D</kbd><span>Steer</span></div>
+          <div><kbd>SPACE</kbd><span>Handbrake</span></div>
+          <div><kbd>C</kbd><span>Camera view</span></div>
+          <div><kbd>T</kbd><span>Change the light</span></div>
+          <div><kbd>H</kbd><span>Little horn</span></div>
+          <div><kbd>M</kbd><span>Mute / unmute</span></div>
+          <div><kbd>P</kbd><span>Photo mode</span></div>
+          <div><kbd>R</kbd><span>Back on the road</span></div>
+          <div><kbd>ESC</kbd><span>Pause</span></div>
+        </div>
+        <p class="help-note">Follow the turquoise chevrons. Slow down as you reach the glowing ring and your passenger will run over. The meter is a suggestion; the town is not in a hurry.</p>
+        <button id="helpDoneBtn" class="primary-btn"><span>Got it</span><span class="btn-arrow">→</span></button>
+      </div>
+    </div>
+
+    <div class="photo-hint" id="photoHint">PHOTO MODE · PRESS P TO RETURN</div>
+
+    <div class="mobile-controls" id="mobileControls">
+      <div class="steer-pad">
+        <button data-touch="left" aria-label="Steer left">◀</button>
+        <button data-touch="right" aria-label="Steer right">▶</button>
+      </div>
+      <div class="drive-pad">
+        <button data-touch="brake" aria-label="Brake">BRAKE</button>
+        <button data-touch="gas" aria-label="Accelerate">GAS</button>
+        <button data-touch="handbrake" aria-label="Handbrake">DRIFT</button>
+      </div>
+    </div>
+
+    <div id="loader">
+      <div class="loader-inner">
+        <span class="loader-kicker">SOEST · 19:12</span>
+        <h1>Driving<br><em>in Soest</em></h1>
+        <div class="loader-line"><i></i></div>
+        <span class="loader-note">Warming up the engine…</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
